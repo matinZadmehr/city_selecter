@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>انتخاب شهر | Carry to Me</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Bootstrap 5 for nice dropdowns -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Flag icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            direction: rtl;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .selection-section {
+            margin: 25px 0;
+        }
+        
+        .section-title {
+            color: #444;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #667eea;
+        }
+        
+        .form-select {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            height: auto;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        
+        .form-select option {
+            padding: 10px;
+            font-size: 16px;
+        }
+        
+        .city-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+        
+        .city-flag {
+            width: 20px;
+            height: 15px;
+            border-radius: 2px;
+        }
+        
+        .selected-info {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-right: 4px solid #4CAF50;
+            display: none;
+        }
+        
+        .selected-info.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .selected-city-display {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .flag-large {
+            width: 40px;
+            height: 30px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .city-details {
+            flex: 1;
+        }
+        
+        .city-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .country-name {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .confirm-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+        }
+        
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .confirm-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .cancel-btn {
+            background: #f5f5f5;
+            color: #666;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .cancel-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2196f3;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hint {
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                border-radius: 15px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+        }
+        
+        /* Custom flag colors since flag-icon-css doesn't have Iran/Oman */
+        .flag-ir {
+            background: linear-gradient(to bottom, #239f40 33%, #fff 33%, #fff 66%, #da0000 66%);
+            position: relative;
+        }
+        
+        .flag-ir::before {
+            content: "☫";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 8px;
+        }
+        
+        .flag-om {
+            background: #db1616;
+            position: relative;
+        }
+        
+        .flag-om::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 33%;
+            width: 67%;
+            height: 100%;
+            background: #fff;
+        }
+        
+        .flag-om::before {
+            content: "⚔️";
+            position: absolute;
+            top: 50%;
+            left: 20%;
+            transform: translate(-50%, -50%);
+            font-size: 8px;
+            z-index: 1;
+        }
+        
+        /* RTL adjustments */
+        .form-select {
+            text-align: right;
+            padding-right: 50px;
+        }
+        
+        .form-select option {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌍</div>
+            <h1>انتخاب شهر مبدا/مقصد</h1>
+            <p class="subtitle">لطفا کشور و شهر خود را برای ارسال بسته انتخاب کنید</p>
+        </div>
+        
+        <div class="selection-section">
+            <div class="section-title">
+                <span>مرحله ۱: انتخاب کشور</span>
+            </div>
+            <select id="countrySelect" class="form-select">
+                <option value="" selected disabled>-- لطفا یک کشور انتخاب کنید --</option>
+                <option value="IR" data-flag="ir">ایران 🇮🇷</option>
+                <option value="OM" data-flag="om">عمان 🇴🇲</option>
+            </select>
+        </div>
+        
+        <div class="selection-section">
+            <div class="section-title">
+                <span>مرحله ۲: انتخاب شهر</span>
+            </div>
+            <select id="citySelect" class="form-select" disabled>
+                <option value="" selected disabled>-- ابتدا کشور را انتخاب کنید --</option>
+            </select>
+            <p class="hint">پس از انتخاب کشور، لیست شهرها نمایش داده می‌شود</p>
+        </div>
+        
+        <div class="selected-info" id="selectedInfo">
+            <div class="selected-city-display">
+                <div id="selectedFlag" class="flag-large"></div>
+                <div class="city-details">
+                    <div id="selectedCityName" class="city-name">شهر انتخاب نشده</div>
+                    <div id="selectedCountryName" class="country-name">کشور انتخاب نشده</div>
+                </div>
+            </div>
+            <div id="selectionType">
+                <strong>نوع:</strong> <span id="selectionTypeText">انتظار برای انتخاب...</span>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="cancel-btn" onclick="cancelSelection()">
+                <span>❌</span> لغو
+            </button>
+            <button id="confirmBtn" class="confirm-btn" onclick="sendToTelegram()" disabled>
+                <span>✅</span> تأیید و ارسال
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>در حال ارسال به تلگرام...</p>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS for dropdowns -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.hide();
+        
+        // City data
+        const citiesData = {
+            IR: {
+                name: "ایران",
+                name_en: "Iran",
+                cities: [
+                    { id: "THR", name: "تهران", name_en: "Tehran", population: "8.7M" },
+                    { id: "MHD", name: "مشهد", name_en: "Mashhad", population: "3.1M" },
+                    { id: "IFN", name: "اصفهان", name_en: "Isfahan", population: "2.0M" },
+                    { id: "KRY", name: "کرج", name_en: "Karaj", population: "1.6M" },
+                    { id: "SYZ", name: "شیراز", name_en: "Shiraz", population: "1.6M" },
+                    { id: "TBZ", name: "تبریز", name_en: "Tabriz", population: "1.6M" },
+                    { id: "QM", name: "قم", name_en: "Qom", population: "1.3M" },
+                    { id: "AWZ", name: "اهواز", name_en: "Ahvaz", population: "1.2M" },
+                    { id: "KSH", name: "کرمانشاه", name_en: "Kermanshah", population: "1.0M" },
+                    { id: "OMH", name: "ارومیه", name_en: "Urmia", population: "736K" }
+                ]
+            },
+            OM: {
+                name: "عمان",
+                name_en: "Oman",
+                cities: [
+                    { id: "MCT", name: "مسقط", name_en: "Muscat", population: "1.3M" }
+                ]
+            }
+        };
+        
+        // DOM elements
+        const countrySelect = document.getElementById('countrySelect');
+        const citySelect = document.getElementById('citySelect');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const selectedInfo = document.getElementById('selectedInfo');
+        const selectedFlag = document.getElementById('selectedFlag');
+        const selectedCityName = document.getElementById('selectedCityName');
+        const selectedCountryName = document.getElementById('selectedCountryName');
+        const selectionTypeText = document.getElementById('selectionTypeText');
+        
+        // Store selected values
+        let selectedCountry = null;
+        let selectedCity = null;
+        
+        // Event Listeners
+        countrySelect.addEventListener('change', function() {
+            const countryCode = this.value;
+            selectedCountry = citiesData[countryCode];
+            
+            // Enable city select
+            citySelect.disabled = false;
+            citySelect.innerHTML = '<option value="" selected disabled>-- لطفا شهر را انتخاب کنید --</option>';
+            
+            // Populate cities
+            selectedCountry.cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.id;
+                option.textContent = `${city.name} (${city.name_en})`;
+                option.dataset.name = city.name;
+                option.dataset.name_en = city.name_en;
+                option.dataset.population = city.population;
+                citySelect.appendChild(option);
+            });
+            
+            updateSelectedInfo();
+        });
+        
+        citySelect.addEventListener('change', function() {
+            const cityId = this.value;
+            const option = this.options[this.selectedIndex];
+            
+            if (cityId && selectedCountry) {
+                selectedCity = {
+                    id: cityId,
+                    name: option.dataset.name,
+                    name_en: option.dataset.name_en,
+                    population: option.dataset.population
+                };
+                
+                confirmBtn.disabled = false;
+                updateSelectedInfo();
+            } else {
+                selectedCity = null;
+                confirmBtn.disabled = true;
+            }
+        });
+        
+        function updateSelectedInfo() {
+            if (selectedCountry && selectedCity) {
+                // Update flag display
+                selectedFlag.className = 'flag-large';
+                selectedFlag.classList.add(`flag-${countrySelect.value.toLowerCase()}`);
+                
+                // Update text
+                selectedCityName.textContent = selectedCity.name;
+                selectedCountryName.textContent = selectedCountry.name;
+                
+                // Determine selection type based on user message
+                const params = new URLSearchParams(window.location.search);
+                const type = params.get('type') || 'sender';
+                
+                if (type === 'sender') {
+                    selectionTypeText.textContent = 'شهر مبدأ (ارسال کننده)';
+                } else if (type === 'traveler') {
+                    selectionTypeText.textContent = 'شهر مقصد (مسافر)';
+                } else {
+                    selectionTypeText.textContent = 'شهر انتخابی';
+                }
+                
+                selectedInfo.classList.add('show');
+            }
+        }
+        
+        function sendToTelegram() {
+            if (!selectedCountry || !selectedCity) {
+                alert('لطفا ابتدا کشور و شهر را انتخاب کنید');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.querySelector('.buttons').style.display = 'none';
+            
+            // Get additional parameters
+            const params = new URLSearchParams(window.location.search);
+            const userId = params.get('user_id') || 'unknown';
+            const sessionId = params.get('session_id') || '';
+            const type = params.get('type') || 'unknown';
+            
+            // Prepare data to send
+            const data = {
+                action: 'city_selected',
+                timestamp: new Date().toISOString(),
+                user_id: userId,
+                session_id: sessionId,
+                selection_type: type,
+                country: {
+                    code: countrySelect.value,
+                    name: selectedCountry.name,
+                    name_en: selectedCountry.name_en
+                },
+                city: {
+                    code: selectedCity.id,
+                    name: selectedCity.name,
+                    name_en: selectedCity.name_en,
+                    population: selectedCity.population
+                },
+                display_text: `${selectedCity.name}، ${selectedCountry.name}`
+            };
+            
+            // Send data back to Telegram bot
+            tg.sendData(JSON.stringify(data));
+            
+            // Close Web App after 1.5 seconds
+            setTimeout(() => {
+                tg.close();
+            }, 1500);
+        }
+        
+        function cancelSelection() {
+            tg.close();
+        }
+        
+        // Handle Telegram events
+        tg.ready();
+    </script>
+</body>
+</html>
