@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>انتخاب شهر | Carry to Me</title>
+    <title>انتخاب مبدا و مقصد | Carry to Me</title>
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Bootstrap 5 for nice dropdowns -->
@@ -33,7 +33,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             width: 100%;
-            max-width: 500px;
+            max-width: 550px;
             overflow: hidden;
             padding: 30px;
         }
@@ -72,12 +72,38 @@
         
         .selection-section {
             margin: 25px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            background: #f9f9f9;
+        }
+        
+        .selection-title {
+            color: #444;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .origin-title {
+            color: #2196f3;
+            border-bottom-color: #2196f3;
+        }
+        
+        .destination-title {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
         }
         
         .section-title {
-            color: #444;
-            margin-bottom: 15px;
-            font-size: 18px;
+            color: #555;
+            margin: 15px 0 10px;
+            font-size: 16px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -98,6 +124,8 @@
             cursor: pointer;
             transition: all 0.3s;
             font-family: inherit;
+            width: 100%;
+            margin-bottom: 15px;
         }
         
         .form-select:focus {
@@ -123,7 +151,7 @@
             border-radius: 2px;
         }
         
-        .selected-info {
+        .selection-info {
             background: #e8f5e9;
             padding: 20px;
             border-radius: 12px;
@@ -132,7 +160,17 @@
             display: none;
         }
         
-        .selected-info.show {
+        .origin-info {
+            background: #e3f2fd;
+            border-right-color: #2196f3;
+        }
+        
+        .destination-info {
+            background: #e8f5e9;
+            border-right-color: #4CAF50;
+        }
+        
+        .selection-info.show {
             display: block;
             animation: fadeIn 0.5s ease;
         }
@@ -250,6 +288,32 @@
             font-style: italic;
         }
         
+        .route-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+            text-align: center;
+        }
+        
+        .route-display.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .route-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .route-subtext {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
         @media (max-width: 480px) {
             .container {
                 padding: 20px;
@@ -321,42 +385,96 @@
     <div class="container">
         <div class="header">
             <div class="logo">🌍</div>
-            <h1>انتخاب شهر مبدا/مقصد</h1>
-            <p class="subtitle">لطفا کشور و شهر خود را برای ارسال بسته انتخاب کنید</p>
+            <h1>انتخاب مبدا و مقصد</h1>
+            <p class="subtitle">لطفا شهر مبدأ (ارسال کننده) و مقصد (گیرنده) را انتخاب کنید</p>
         </div>
         
+        <!-- Origin Selection Section -->
         <div class="selection-section">
-            <div class="section-title">
-                <span>مرحله ۱: انتخاب کشور</span>
+            <div class="selection-title origin-title">
+                <span>📍 انتخاب مبدأ (شهر ارسال کننده)</span>
             </div>
-            <select id="countrySelect" class="form-select">
-                <option value="" selected disabled>-- لطفا یک کشور انتخاب کنید --</option>
-                <option value="IR" data-flag="ir">ایران 🇮🇷</option>
-                <option value="OM" data-flag="om">عمان 🇴🇲</option>
-            </select>
-        </div>
-        
-        <div class="selection-section">
-            <div class="section-title">
-                <span>مرحله ۲: انتخاب شهر</span>
+            
+            <div class="subsection">
+                <div class="section-title">
+                    <span>مرحله ۱: انتخاب کشور مبدأ</span>
+                </div>
+                <select id="originCountrySelect" class="form-select">
+                    <option value="" selected disabled>-- لطفا کشور مبدأ را انتخاب کنید --</option>
+                    <option value="IR" data-flag="ir">ایران 🇮🇷</option>
+                    <option value="OM" data-flag="om">عمان 🇴🇲</option>
+                </select>
             </div>
-            <select id="citySelect" class="form-select" disabled>
-                <option value="" selected disabled>-- ابتدا کشور را انتخاب کنید --</option>
-            </select>
-            <p class="hint">پس از انتخاب کشور، لیست شهرها نمایش داده می‌شود</p>
-        </div>
-        
-        <div class="selected-info" id="selectedInfo">
-            <div class="selected-city-display">
-                <div id="selectedFlag" class="flag-large"></div>
-                <div class="city-details">
-                    <div id="selectedCityName" class="city-name">شهر انتخاب نشده</div>
-                    <div id="selectedCountryName" class="country-name">کشور انتخاب نشده</div>
+            
+            <div class="subsection">
+                <div class="section-title">
+                    <span>مرحله ۲: انتخاب شهر مبدأ</span>
+                </div>
+                <select id="originCitySelect" class="form-select" disabled>
+                    <option value="" selected disabled>-- ابتدا کشور مبدأ را انتخاب کنید --</option>
+                </select>
+                <p class="hint">پس از انتخاب کشور، لیست شهرها نمایش داده می‌شود</p>
+            </div>
+            
+            <div class="selection-info origin-info" id="originInfo">
+                <div class="selected-city-display">
+                    <div id="originFlag" class="flag-large"></div>
+                    <div class="city-details">
+                        <div id="originCityName" class="city-name">شهر انتخاب نشده</div>
+                        <div id="originCountryName" class="country-name">کشور انتخاب نشده</div>
+                    </div>
+                </div>
+                <div>
+                    <strong>نوع:</strong> <span>شهر مبدأ (ارسال کننده)</span>
                 </div>
             </div>
-            <div id="selectionType">
-                <strong>نوع:</strong> <span id="selectionTypeText">انتظار برای انتخاب...</span>
+        </div>
+        
+        <!-- Destination Selection Section -->
+        <div class="selection-section">
+            <div class="selection-title destination-title">
+                <span>🏁 انتخاب مقصد (شهر گیرنده)</span>
             </div>
+            
+            <div class="subsection">
+                <div class="section-title">
+                    <span>مرحله ۱: انتخاب کشور مقصد</span>
+                </div>
+                <select id="destinationCountrySelect" class="form-select">
+                    <option value="" selected disabled>-- لطفا کشور مقصد را انتخاب کنید --</option>
+                    <option value="IR" data-flag="ir">ایران 🇮🇷</option>
+                    <option value="OM" data-flag="om">عمان 🇴🇲</option>
+                </select>
+            </div>
+            
+            <div class="subsection">
+                <div class="section-title">
+                    <span>مرحله ۲: انتخاب شهر مقصد</span>
+                </div>
+                <select id="destinationCitySelect" class="form-select" disabled>
+                    <option value="" selected disabled>-- ابتدا کشور مقصد را انتخاب کنید --</option>
+                </select>
+                <p class="hint">پس از انتخاب کشور، لیست شهرها نمایش داده می‌شود</p>
+            </div>
+            
+            <div class="selection-info destination-info" id="destinationInfo">
+                <div class="selected-city-display">
+                    <div id="destinationFlag" class="flag-large"></div>
+                    <div class="city-details">
+                        <div id="destinationCityName" class="city-name">شهر انتخاب نشده</div>
+                        <div id="destinationCountryName" class="country-name">کشور انتخاب نشده</div>
+                    </div>
+                </div>
+                <div>
+                    <strong>نوع:</strong> <span>شهر مقصد (گیرنده)</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Route Display -->
+        <div class="route-display" id="routeDisplay">
+            <div class="route-text" id="routeText">مسیر: انتخاب نشده</div>
+            <div class="route-subtext" id="routeSubtext">لطفا هر دو مبدأ و مقصد را انتخاب کنید</div>
         </div>
         
         <div class="buttons">
@@ -411,91 +529,172 @@
         };
         
         // DOM elements
-        const countrySelect = document.getElementById('countrySelect');
-        const citySelect = document.getElementById('citySelect');
+        const originCountrySelect = document.getElementById('originCountrySelect');
+        const originCitySelect = document.getElementById('originCitySelect');
+        const destinationCountrySelect = document.getElementById('destinationCountrySelect');
+        const destinationCitySelect = document.getElementById('destinationCitySelect');
         const confirmBtn = document.getElementById('confirmBtn');
-        const selectedInfo = document.getElementById('selectedInfo');
-        const selectedFlag = document.getElementById('selectedFlag');
-        const selectedCityName = document.getElementById('selectedCityName');
-        const selectedCountryName = document.getElementById('selectedCountryName');
-        const selectionTypeText = document.getElementById('selectionTypeText');
+        const originInfo = document.getElementById('originInfo');
+        const destinationInfo = document.getElementById('destinationInfo');
+        const routeDisplay = document.getElementById('routeDisplay');
+        const routeText = document.getElementById('routeText');
+        const routeSubtext = document.getElementById('routeSubtext');
         
         // Store selected values
-        let selectedCountry = null;
-        let selectedCity = null;
+        let selectedOrigin = {
+            country: null,
+            city: null
+        };
         
-        // Event Listeners
-        countrySelect.addEventListener('change', function() {
+        let selectedDestination = {
+            country: null,
+            city: null
+        };
+        
+        // Event Listeners for Origin
+        originCountrySelect.addEventListener('change', function() {
             const countryCode = this.value;
-            selectedCountry = citiesData[countryCode];
+            selectedOrigin.country = citiesData[countryCode];
             
             // Enable city select
-            citySelect.disabled = false;
-            citySelect.innerHTML = '<option value="" selected disabled>-- لطفا شهر را انتخاب کنید --</option>';
-            
+            originCitySelect.disabled = false;
+            originCitySelect.innerHTML = '<option value="" selected disabled>-- لطفا شهر مبدأ را انتخاب کنید --</option>';
+        
             // Populate cities
-            selectedCountry.cities.forEach(city => {
+            selectedOrigin.country.cities.forEach(city => {
                 const option = document.createElement('option');
                 option.value = city.id;
                 option.textContent = `${city.name} (${city.name_en})`;
                 option.dataset.name = city.name;
                 option.dataset.name_en = city.name_en;
                 option.dataset.population = city.population;
-                citySelect.appendChild(option);
+                originCitySelect.appendChild(option);
             });
             
-            updateSelectedInfo();
+            updateOriginInfo();
+            checkIfBothSelected();
         });
         
-        citySelect.addEventListener('change', function() {
+        originCitySelect.addEventListener('change', function() {
             const cityId = this.value;
             const option = this.options[this.selectedIndex];
             
-            if (cityId && selectedCountry) {
-                selectedCity = {
+            if (cityId && selectedOrigin.country) {
+                selectedOrigin.city = {
                     id: cityId,
                     name: option.dataset.name,
                     name_en: option.dataset.name_en,
                     population: option.dataset.population
                 };
                 
-                confirmBtn.disabled = false;
-                updateSelectedInfo();
+                updateOriginInfo();
+                checkIfBothSelected();
             } else {
-                selectedCity = null;
-                confirmBtn.disabled = true;
+                selectedOrigin.city = null;
+                updateOriginInfo();
             }
         });
         
-        function updateSelectedInfo() {
-            if (selectedCountry && selectedCity) {
+        // Event Listeners for Destination
+        destinationCountrySelect.addEventListener('change', function() {
+            const countryCode = this.value;
+            selectedDestination.country = citiesData[countryCode];
+            
+            // Enable city select
+            destinationCitySelect.disabled = false;
+            destinationCitySelect.innerHTML = '<option value="" selected disabled>-- لطفا شهر مقصد را انتخاب کنید --</option>';
+        
+            // Populate cities
+            selectedDestination.country.cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.id;
+                option.textContent = `${city.name} (${city.name_en})`;
+                option.dataset.name = city.name;
+                option.dataset.name_en = city.name_en;
+                option.dataset.population = city.population;
+                destinationCitySelect.appendChild(option);
+            });
+            
+            updateDestinationInfo();
+            checkIfBothSelected();
+        });
+        
+        destinationCitySelect.addEventListener('change', function() {
+            const cityId = this.value;
+            const option = this.options[this.selectedIndex];
+            
+            if (cityId && selectedDestination.country) {
+                selectedDestination.city = {
+                    id: cityId,
+                    name: option.dataset.name,
+                    name_en: option.dataset.name_en,
+                    population: option.dataset.population
+                };
+                
+                updateDestinationInfo();
+                checkIfBothSelected();
+            } else {
+                selectedDestination.city = null;
+                updateDestinationInfo();
+            }
+        });
+        
+        // Update functions
+        function updateOriginInfo() {
+            if (selectedOrigin.country && selectedOrigin.city) {
                 // Update flag display
-                selectedFlag.className = 'flag-large';
-                selectedFlag.classList.add(`flag-${countrySelect.value.toLowerCase()}`);
+                const originFlag = document.getElementById('originFlag');
+                originFlag.className = 'flag-large';
+                originFlag.classList.add(`flag-${originCountrySelect.value.toLowerCase()}`);
                 
                 // Update text
-                selectedCityName.textContent = selectedCity.name;
-                selectedCountryName.textContent = selectedCountry.name;
+                document.getElementById('originCityName').textContent = selectedOrigin.city.name;
+                document.getElementById('originCountryName').textContent = selectedOrigin.country.name;
                 
-                // Determine selection type based on user message
-                const params = new URLSearchParams(window.location.search);
-                const type = params.get('type') || 'sender';
+                originInfo.classList.add('show');
+            } else {
+                originInfo.classList.remove('show');
+            }
+        }
+        
+        function updateDestinationInfo() {
+            if (selectedDestination.country && selectedDestination.city) {
+                // Update flag display
+                const destinationFlag = document.getElementById('destinationFlag');
+                destinationFlag.className = 'flag-large';
+                destinationFlag.classList.add(`flag-${destinationCountrySelect.value.toLowerCase()}`);
                 
-                if (type === 'sender') {
-                    selectionTypeText.textContent = 'شهر مبدأ (ارسال کننده)';
-                } else if (type === 'traveler') {
-                    selectionTypeText.textContent = 'شهر مقصد (مسافر)';
-                } else {
-                    selectionTypeText.textContent = 'شهر انتخابی';
-                }
+                // Update text
+                document.getElementById('destinationCityName').textContent = selectedDestination.city.name;
+                document.getElementById('destinationCountryName').textContent = selectedDestination.country.name;
                 
-                selectedInfo.classList.add('show');
+                destinationInfo.classList.add('show');
+            } else {
+                destinationInfo.classList.remove('show');
+            }
+        }
+        
+        function checkIfBothSelected() {
+            if (selectedOrigin.country && selectedOrigin.city && 
+                selectedDestination.country && selectedDestination.city) {
+                
+                // Enable confirm button
+                confirmBtn.disabled = false;
+                
+                // Update route display
+                routeText.textContent = `مسیر: ${selectedOrigin.city.name} → ${selectedDestination.city.name}`;
+                routeSubtext.textContent = `${selectedOrigin.country.name} به ${selectedDestination.country.name}`;
+                routeDisplay.classList.add('show');
+            } else {
+                confirmBtn.disabled = true;
+                routeDisplay.classList.remove('show');
             }
         }
         
         function sendToTelegram() {
-            if (!selectedCountry || !selectedCity) {
-                alert('لطفا ابتدا کشور و شهر را انتخاب کنید');
+            if (!selectedOrigin.country || !selectedOrigin.city || 
+                !selectedDestination.country || !selectedDestination.city) {
+                alert('لطفا ابتدا هر دو مبدأ و مقصد را انتخاب کنید');
                 return;
             }
             
@@ -507,27 +706,40 @@
             const params = new URLSearchParams(window.location.search);
             const userId = params.get('user_id') || 'unknown';
             const sessionId = params.get('session_id') || '';
-            const type = params.get('type') || 'unknown';
             
             // Prepare data to send
             const data = {
-                action: 'city_selected',
+                action: 'route_selected',
                 timestamp: new Date().toISOString(),
                 user_id: userId,
                 session_id: sessionId,
-                selection_type: type,
-                country: {
-                    code: countrySelect.value,
-                    name: selectedCountry.name,
-                    name_en: selectedCountry.name_en
+                origin: {
+                    country: {
+                        code: originCountrySelect.value,
+                        name: selectedOrigin.country.name,
+                        name_en: selectedOrigin.country.name_en
+                    },
+                    city: {
+                        code: selectedOrigin.city.id,
+                        name: selectedOrigin.city.name,
+                        name_en: selectedOrigin.city.name_en,
+                        population: selectedOrigin.city.population
+                    }
                 },
-                city: {
-                    code: selectedCity.id,
-                    name: selectedCity.name,
-                    name_en: selectedCity.name_en,
-                    population: selectedCity.population
+                destination: {
+                    country: {
+                        code: destinationCountrySelect.value,
+                        name: selectedDestination.country.name,
+                        name_en: selectedDestination.country.name_en
+                    },
+                    city: {
+                        code: selectedDestination.city.id,
+                        name: selectedDestination.city.name,
+                        name_en: selectedDestination.city.name_en,
+                        population: selectedDestination.city.population
+                    }
                 },
-                display_text: `${selectedCity.name}، ${selectedCountry.name}`
+                display_text: `از ${selectedOrigin.city.name} به ${selectedDestination.city.name}`
             };
             
             // Send data back to Telegram bot
