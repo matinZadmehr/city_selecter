@@ -275,6 +275,29 @@
             margin: 0 auto 15px;
         }
         
+        .error-message {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            background: #ffebee;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .success-icon {
+            font-size: 80px;
+            color: #2ecc71;
+            margin-bottom: 20px;
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -389,6 +412,12 @@
             <p class="subtitle">لطفا شهر مبدأ  و مقصد  را انتخاب کنید</p>
         </div>
         
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage">
+            <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+            <p id="errorText">خطا در ارسال اطلاعات. لطفاً دوباره تلاش کنید.</p>
+        </div>
+        
         <!-- Origin Selection Section -->
         <div class="selection-section">
             <div class="selection-title origin-title">
@@ -490,16 +519,51 @@
             <div class="spinner"></div>
             <p>در حال ارسال به تلگرام...</p>
         </div>
+        
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✅</div>
+            <h2>اطلاعات با موفقیت ارسال شد!</h2>
+            <p>مسیر انتخابی شما ثبت شد و در حال پردازش است.</p>
+            <p style="margin-top: 20px; color: #7f8c8d; font-size: 14px;">این پنجره به طور خودکار بسته خواهد شد...</p>
+        </div>
     </div>
     
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Bootstrap JS for dropdowns -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
         // Initialize Telegram Web App
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.MainButton.hide();
+        let tg = null;
+        let isTelegramWebApp = false;
+        
+        // Initialize Telegram Web App
+        function initTelegramWebApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                isTelegramWebApp = true;
+                tg.ready();
+                tg.expand();
+                tg.MainButton.hide();
+                return true;
+            }
+            return false;
+        }
+        
+        // CONFIGURATION - SET YOUR WEBHOOK URL HERE
+        const WEBHOOK_URL = 'https://aistudio.didbi.com/webhook/form/route'; // ← Change this to your webhook URL
+        const N8N_WEBHOOK_URL = 'https://aistudio.didbi.com/webhook/form/route'; // ← Optional: Direct n8n webhook
+        
+        // Show error message
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('errorMessage').style.display = 'none';
+            }, 5000);
+        }
         
         // City data
         const citiesData = {
@@ -691,10 +755,54 @@
             }
         }
         
-        function sendToTelegram() {
+        // Send data to webhook
+        async function sendToWebhook(data) {
+            try {
+                console.log('Sending data to webhook:', data);
+                
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('Webhook response:', result);
+                
+                return result.success;
+                
+            } catch (error) {
+                console.error('Error sending to webhook:', error);
+                return false;
+            }
+        }
+        
+        // Send directly to n8n (optional)
+        async function sendDirectlyToN8N(data) {
+            try {
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                return response.ok;
+                
+            } catch (error) {
+                console.error('Error sending to n8n:', error);
+                return false;
+            }
+        }
+        
+        // Main send function
+        async function sendToTelegram() {
             if (!selectedOrigin.country || !selectedOrigin.city || 
                 !selectedDestination.country || !selectedDestination.city) {
-                alert('لطفا ابتدا هر دو مبدأ و مقصد را انتخاب کنید');
+                showError('لطفا ابتدا هر دو مبدأ و مقصد را انتخاب کنید');
                 return;
             }
             
@@ -702,17 +810,23 @@
             document.getElementById('loading').style.display = 'block';
             document.querySelector('.buttons').style.display = 'none';
             
-            // Get additional parameters
-            const params = new URLSearchParams(window.location.search);
-            const userId = params.get('user_id') || 'unknown';
-            const sessionId = params.get('session_id') || '';
+            // Get Telegram user info if available
+            let telegramUser = {};
+            if (isTelegramWebApp && tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                telegramUser = {
+                    telegram_id: tg.initDataUnsafe.user.id,
+                    telegram_username: tg.initDataUnsafe.user.username,
+                    telegram_first_name: tg.initDataUnsafe.user.first_name,
+                    telegram_last_name: tg.initDataUnsafe.user.last_name,
+                    telegram_language_code: tg.initDataUnsafe.user.language_code
+                };
+            }
             
             // Prepare data to send
             const data = {
-                action: 'route_selected',
+                action: 'city_route_selected',
                 timestamp: new Date().toISOString(),
-                user_id: userId,
-                session_id: sessionId,
+                route_type: 'international',
                 origin: {
                     country: {
                         code: originCountrySelect.value,
@@ -739,24 +853,125 @@
                         population: selectedDestination.city.population
                     }
                 },
-                display_text: `از ${selectedOrigin.city.name} به ${selectedDestination.city.name}`
+                display_text: `از ${selectedOrigin.city.name} به ${selectedDestination.city.name}`,
+                display_text_en: `From ${selectedOrigin.city.name_en} to ${selectedDestination.city.name_en}`,
+                telegram_user: telegramUser,
+                source: 'telegram_city_selection_web_app',
+                ip_address: await getUserIP()
             };
             
-            // Send data back to Telegram bot
-            tg.sendData(JSON.stringify(data));
+            console.log('Route data:', data);
             
-            // Close Web App after 1.5 seconds
+            // Send data using multiple methods (with fallbacks)
+            let success = false;
+            
+            // Method 1: Send to webhook.php
+            if (WEBHOOK_URL && !WEBHOOK_URL.includes('your-domain.com')) {
+                success = await sendToWebhook(data);
+            }
+            
+            // Method 2: Try direct n8n webhook if webhook.php fails or not configured
+            if (!success && N8N_WEBHOOK_URL && !N8N_WEBHOOK_URL.includes('your-n8n.com')) {
+                success = await sendDirectlyToN8N(data);
+            }
+            
+            // Method 3: Try Telegram sendData as fallback
+            if (!success && isTelegramWebApp && tg && tg.sendData) {
+                try {
+                    tg.sendData(JSON.stringify(data));
+                    success = true;
+                    console.log('Data sent via Telegram sendData');
+                } catch (error) {
+                    console.error('Telegram sendData error:', error);
+                }
+            }
+            
+            // Show success message
             setTimeout(() => {
-                tg.close();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Close after 3 seconds if in Telegram
+                setTimeout(() => {
+                    if (isTelegramWebApp && tg && tg.close) {
+                        tg.close();
+                    } else {
+                        // Show manual close message for browser
+                        document.getElementById('successMessage').innerHTML += 
+                            '<p style="margin-top: 20px; color: #7f8c8d; font-size: 14px;">می‌توانید این پنجره را ببندید.</p>';
+                    }
+                }, 3000);
+                
             }, 1500);
         }
         
-        function cancelSelection() {
-            tg.close();
+        // Get user IP address
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                return 'unknown';
+            }
         }
         
-        // Handle Telegram events
-        tg.ready();
+        function cancelSelection() {
+            if (isTelegramWebApp && tg && tg.close) {
+                tg.close();
+            } else {
+                if (confirm('آیا از لغو عملیات اطمینان دارید؟')) {
+                    window.location.reload();
+                }
+            }
+        }
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Telegram Web App
+            const telegramInitialized = initTelegramWebApp();
+            
+            if (!telegramInitialized) {
+                console.log('Running in browser mode (not in Telegram)');
+                // Add test button for browser testing
+                const testButton = document.createElement('button');
+                testButton.innerHTML = '🧪 تست ارسال (بدون تلگرام)';
+                testButton.style.cssText = `
+                    background: #ff9800;
+                    color: white;
+                    border: none;
+                    padding: 12px;
+                    border-radius: 10px;
+                    margin-top: 15px;
+                    width: 100%;
+                    font-weight: bold;
+                    cursor: pointer;
+                `;
+                testButton.onclick = function() {
+                    console.log('Test mode activated');
+                    sendToTelegram();
+                };
+                document.querySelector('.buttons').appendChild(testButton);
+            }
+            
+            // Check if webhook URL is configured
+            if (WEBHOOK_URL.includes('your-domain.com')) {
+                showError('لطفاً آدرس وب‌هوک را در تنظیمات کد وارد کنید.');
+            }
+            
+            // Set phone input to numeric keyboard on mobile
+            document.querySelectorAll('input[type="tel"]').forEach(input => {
+                input.addEventListener('focus', function() {
+                    if (window.innerWidth <= 768) {
+                        this.type = 'number';
+                        this.setAttribute('inputmode', 'numeric');
+                    }
+                });
+                input.addEventListener('blur', function() {
+                    this.type = 'tel';
+                });
+            });
+        });
     </script>
 </body>
 </html>
