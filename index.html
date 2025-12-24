@@ -870,21 +870,6 @@
                 success = await sendToWebhook(data);
             }
             
-            // Method 2: Try direct n8n webhook if webhook.php fails or not configured
-            if (!success && N8N_WEBHOOK_URL && !N8N_WEBHOOK_URL.includes('your-n8n.com')) {
-                success = await sendDirectlyToN8N(data);
-            }
-            
-            // Method 3: Try Telegram sendData as fallback
-            if (!success && isTelegramWebApp && tg && tg.sendData) {
-                try {
-                    tg.sendData(JSON.stringify(data));
-                    success = true;
-                    console.log('Data sent via Telegram sendData');
-                } catch (error) {
-                    console.error('Telegram sendData error:', error);
-                }
-            }
             
             // Show success message
             setTimeout(() => {
